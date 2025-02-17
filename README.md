@@ -60,7 +60,7 @@ It serves as a tool that amplifies their functionality and streamlines the work 
 
 	end
 
-	local Button = robustclass( 'Button : BasePanel' )
+	local Button = robustclass( 'Button : ButtonBase' )
 	do
 
 		function Button:Button() print( 'Button\'s constructor called' ) end
