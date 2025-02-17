@@ -13,66 +13,71 @@ It serves as a tool that amplifies their functionality and streamlines the work 
 	<details> <summary>Demo</summary>
 
 	```lua
-	local A = robustclass( 'A' )
-	A.test = 'Hello World!'
+	local BasePanel = robustclass( 'BasePanel' )
+	do
 
-	local B = robustclass( 'B : A' )
-	local C = robustclass( 'C : B' )
-	local D = robustclass( 'D : C' )
+		BasePanel.BaseWidth = 64
+		BasePanel.BaseHeight = 24
 
-	print( Format( 'D.test => %s', D.test ) )
+		function BasePanel:BasePanel()
 
-	local objD = D()
-	print( Format( 'objD.test => %s', objD.test ) )
+			self.x, self.y = 0, 0
+			self.w, self.h = BasePanel.BaseWidth, BasePanel.BaseHeight
+
+		end
+
+	end
+
+	local ButtonBase = robustclass( 'ButtonBase : BasePanel' )
+	local Button = robustclass( 'Button : ButtonBase' )
+
+	local BasicLabel = robustclass( 'BasicLabel : Button' )
+
+	print( Format( 'BasicLabel.BaseWidth => %s', BasicLabel.BaseWidth ) )
+
+	local Label = BasicLabel()
+	print( Format( 'Label.w => %s', Label.w ) )
 	```
 	![Demo #1](demo-1.png)
 	</details>
 
-* Recursive construction & deconstruction of an object</br>
+* Recursive construction & destruction of an object</br>
 	<details> <summary>Demo</summary>
 
 	```lua
-	local A = robustclass( 'A' )
+	local BasePanel = robustclass( 'BasePanel' )
 	do
 
-		function A:A()
-
-			self.phi = 1.618
-			print( 'A\'s constructor called' )
-
-		end
+		function BasePanel:BasePanel() print( 'BasePanel\'s constructor called' ) end
+		function BasePanel:_BasePanel() print( 'BasePanel\'s destructor called' ) end
 
 	end
 
-	local B = robustclass( 'B : A' )
+	local ButtonBase = robustclass( 'ButtonBase : BasePanel' )
 	do
 
-		function B:_B() print( 'B\'s destructor called' ) end
+		function ButtonBase:ButtonBase() print( 'ButtonBase\'s constructor called' ) end
 
 	end
 
-	local C = robustclass( 'C : B' )
+	local Button = robustclass( 'Button : BasePanel' )
 	do
 
-		function C:C() print( 'C\'s constructor called' ) end
+		function Button:Button() print( 'Button\'s constructor called' ) end
 
 	end
 
-	local D = robustclass( 'D : C' )
+	local BasicLabel = robustclass( 'BasicLabel : Button' )
 	do
 
-		function D:D()
-
-			print( 'D\'s constructor called' )
-
-		end
+		function BasicLabel:BasicLabel() print( 'BasicLabel\'s constructor called' ) end
 
 	end
 
-	local objD = D()
-	print( 'phi ~ ' .. objD.phi )
+	local Label = BasicLabel()
+	print( Label )
 
-	robustclass.Delete( objD )
+	robustclass.Delete( Label )
 	```
 	![Demo #2](demo-2.png)
 	</details>
@@ -84,46 +89,50 @@ It serves as a tool that amplifies their functionality and streamlines the work 
 	<details> <summary>Demo</summary>
 
 	```lua
-	local A = robustclass( 'A' )
+	local BasePanel = robustclass( 'BasePanel' )
 	do
 
-		AccessorFunc( A, 'x', 'X' )
-		AccessorFunc( A, 'y', 'Y' )
+		BasePanel.BaseWidth = 64
+		BasePanel.BaseHeight = 24
 
-		function A:A() print( 'A\'s constructor called' ) end
+		function BasePanel:BasePanel()
 
-	end
-
-	local B = robustclass( 'B' )
-	do
-
-		function B:B() print( 'B\'s constructor called' ) end
-
-	end
-
-	local C = robustclass( 'C' )
-	do
-
-		function C:C() print( 'C\'s constructor called' ) end
-
-	end
-
-	local D = robustclass( 'D : C, B, A' )
-	do
-
-		function D:D()
-
-			print( 'D\'s constructor called' )
-
-			self:SetX( 4 )
-			self:SetY( 0 )
+			self.x, self.y = 0, 0
+			self.w, self.h = BasePanel.BaseWidth, BasePanel.BaseHeight
 
 		end
 
 	end
 
-	local objD = D()
-	print( objD:GetX(), objD:GetY() )
+	local BasicLabel = robustclass( 'BasicLabel : BasePanel' )
+	do
+
+		function BasicLabel:BasicLabel()
+
+			self.text = 'Lorem ipsum'
+
+		end
+
+	end
+
+	local ButtonBase = robustclass( 'ButtonBase : BasePanel' )
+	local Button = robustclass( 'Button : ButtonBase, BasicLabel' )
+
+	local ContextActions = robustclass( 'ContextActions' )
+	do
+
+		function ContextActions:ContextActions()
+
+			self.Actions = {}
+
+		end
+
+	end
+
+	local AdvancedLabel = robustclass( 'AdvancedLabel : BasicLabel, ButtonBase, ContextActions' )
+
+	local pnlLabel = AdvancedLabel()
+	print( pnlLabel.text, pnlLabel.Actions )
 	```
 	![Demo #3](demo-3.png)
 	</details>
