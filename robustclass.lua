@@ -1,8 +1,6 @@
 --[[–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
-	RobustClass — GLua Classes System with a kinship to C++ classes
-
-	GitHub: https://github.com/noaccessl/glua-RobustClass
+	https://github.com/noaccessl/glua-RobustClass
 
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
 
@@ -11,49 +9,41 @@
 	Prepare
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
 --
--- Libraries functions
+-- Functions
 --
-local Format	= string.format
-local strmatch	= string.match
+local Format = string.format
+local strmatch = string.match
 local strgmatch = string.gmatch
 
 local TableCopy = table.Copy
+local istable = istable
+local isstring = isstring
+
+local FindMetaTable = FindMetaTable
+local RegisterMetaTable = RegisterMetaTable
+
+local setmetatable = setmetatable
+local getmetatable = getmetatable
+
+local forcesetmetatable = debug.setmetatable
+local forcegetmetatable = debug.getmetatable
+
+local next = pairs( {} )
 
 --
 -- Globals
 --
-local istable	= istable
-local isstring	= isstring
-
-local FindMetaTable		= FindMetaTable
-local RegisterMetaTable	= RegisterMetaTable
-
-local setmetatable = debug.setmetatable
-local getmetatable = debug.getmetatable
-
 local _G = _G
-
---
--- Utilities
---
-local next = pairs( {} )
 
 
 --[[–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-	RobustClass
+	Init
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
-robustclass = robustclass or {
+robustclass = robustclass or {}
 
-	VERSION = 250217 -- yy/mm/dd
-
-}
-
-local robustclass = robustclass
-local _ALIAS = {}
+robustclass.VERSION = 250615 -- YY/MM/DD
 
 setmetatable( robustclass, {
-
-	__index = _ALIAS;
 
 	__call = function( this, ... )
 
@@ -63,12 +53,13 @@ setmetatable( robustclass, {
 
 } )
 
+
 --[[–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 	Purpose: (Internal) Common __tostring-metamethod
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
-local function __tostring_common( pObj )
+local function fnCommonToString( pObj )
 
-	local pObj_mt = getmetatable( pObj )
+	local pObj_mt = forcegetmetatable( pObj )
 
 	if ( not pObj_mt ) then
 		return nil
@@ -84,7 +75,7 @@ local function __tostring_common( pObj )
 		return nil
 	end
 
-	return Format( '%s: %p', pObj.ClassName, pObj )
+	return Format( '%s: %p', classname, pObj )
 
 end
 
@@ -92,68 +83,66 @@ end
 --[[–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 	Purpose: (Internal) Inherits the provided base classes in the given class
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
-local function inherit( class_t, inheritances )
+local function inherit( class, inheritances )
 
-	local BaseClassFormer
+	local pPrevBaseClass
 
 	for baseclassname in strgmatch( inheritances, '([%w_]+),? ?' ) do
 
-		local baseclass_t = FindMetaTable( baseclassname )
+		local BaseClassMeta = FindMetaTable( baseclassname )
 
-		if ( baseclass_t ) then
+		if ( BaseClassMeta ) then
 
-			local BaseClassLatter = TableCopy( baseclass_t )
+			local tPertinentBaseClass = TableCopy( BaseClassMeta )
 
-			BaseClassLatter.__tostring, BaseClassLatter.__index, BaseClassLatter.MetaName, BaseClassLatter.MetaID = nil
+			tPertinentBaseClass.__tostring, tPertinentBaseClass.__index, tPertinentBaseClass.MetaName, tPertinentBaseClass.MetaID = nil
 
-			if ( BaseClassFormer ) then
+			if ( pPrevBaseClass ) then
 
-				BaseClassFormer.BaseClass = BaseClassLatter
-				getmetatable( BaseClassFormer ).__index = BaseClassLatter
+				pPrevBaseClass.BaseClass = tPertinentBaseClass
+				getmetatable( pPrevBaseClass ).__index = tPertinentBaseClass
 
-				BaseClassFormer = BaseClassLatter
+				pPrevBaseClass = tPertinentBaseClass
 
 			else
 
-				class_t.BaseClass = BaseClassLatter
-				BaseClassFormer = BaseClassLatter
+				class.BaseClass = tPertinentBaseClass
+				pPrevBaseClass = tPertinentBaseClass
 
 			end
 
 		else
-			ErrorNoHalt( 'unknown inheritance \'', baseclassname, '\' for the \'', class_t.ClassName, '\' class\n' )
+			ErrorNoHalt( 'unknown inheritance \'', baseclassname, '\' for the \'', class.ClassName, '\' class\n' )
 		end
 
 	end
 
 end
 
-
 --[[–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 	Purpose: (Internal) Refines the given class
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
-local function refine( class_t, classname, inheritances )
+local function refine( class, classname, inheritances )
 
-	for k in next, class_t do
-		class_t[k] = nil
+	for k in next, class do
+		class[k] = nil
 	end
 
-	class_t.ClassName = classname
-	class_t.__tostring = __tostring_common
+	class.ClassName = classname
+	class.__tostring = fnCommonToString
 
-	class_t.__index = class_t
+	class.__index = class
 
 	if ( inheritances ) then
-		inherit( class_t, inheritances )
+		inherit( class, inheritances )
 	end
 
-
-	local class_mt = getmetatable( class_mt )
+	local class_mt = getmetatable( class )
 
 	if ( not class_mt ) then
 
 		class_mt = {}
-		setmetatable( class_t, class_mt )
+		setmetatable( class, class_mt )
 
 	else
 
@@ -170,9 +159,9 @@ local function refine( class_t, classname, inheritances )
 	end
 
 	if ( inheritances ) then
-		class_mt.__index = class_t.BaseClass
+		class_mt.__index = class.BaseClass
 	else
-		class_t.BaseClass, class_mt.__index = nil
+		class.BaseClass, class_mt.__index = nil
 	end
 
 end
@@ -191,7 +180,6 @@ function robustclass.Register( reginput )
 
 	end
 
-
 	--
 	-- Retrieve the class name and the base classes if provided
 	--
@@ -206,14 +194,11 @@ function robustclass.Register( reginput )
 
 	local inheritances = strmatch( reginput, ' : (.+)' )
 
-
-	local CLASS
+	local CLASS = FindMetaTable( classname )
 
 	--
 	-- If the class already exists, refine and return it
 	--
-	CLASS = FindMetaTable( classname )
-
 	if ( CLASS ) then
 
 		refine( CLASS, classname, inheritances )
@@ -227,7 +212,7 @@ function robustclass.Register( reginput )
 	CLASS = {
 
 		ClassName = classname;
-		__tostring = __tostring_common
+		__tostring = fnCommonToString
 
 	}
 
@@ -240,8 +225,10 @@ function robustclass.Register( reginput )
 		inherit( CLASS, inheritances )
 	end
 
-
-	local CLASS_mt do
+	--
+	-- The metatable of the class itself
+	--
+	local CLASS_mt; do
 
 		CLASS_mt = {}
 
@@ -274,11 +261,10 @@ function robustclass.Register( reginput )
 
 	end
 
-
 	-- Store the class in the registry
 	RegisterMetaTable( classname, CLASS )
 
-	-- A global create-wrapper
+	-- A global create-function wrap
 	_G[classname] = function( ... )
 
 		return robustclass.Create( classname, ... )
@@ -289,39 +275,38 @@ function robustclass.Register( reginput )
 
 end
 
-_ALIAS.Class = robustclass.Register
+robustclass.Class = robustclass.Register
 
 
 --[[–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 	Purpose: (Internal) Constructs the given object
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
-local function construct( pObj, class_t, classname, ignite, ... )
+local function construct( pObj, class, classname, ignite, ... )
 
-	local baseclass_t = class_t.BaseClass
+	local baseclass = class.BaseClass
 
-	if ( baseclass_t ) then
+	if ( baseclass ) then
 
-		local baseclassname = baseclass_t.ClassName
+		local baseclassname = baseclass.ClassName
 
-		construct( pObj, baseclass_t, baseclassname, ignite, ... )
+		construct( pObj, baseclass, baseclassname, ignite, ... )
 
 		if ( ignite ) then
 
-			local ConstructorLatter = baseclass_t[baseclassname]
+			local pfnNextConstructor = baseclass[baseclassname]
 
-			if ( ConstructorLatter ) then
-				ConstructorLatter( pObj, ... )
+			if ( pfnNextConstructor ) then
+				pfnNextConstructor( pObj, ... )
 			end
 
 		end
 
 	end
 
+	local pfnForemostConstructor = class[classname]
 
-	local ConstructorForemost = class_t[classname]
-
-	if ( ConstructorForemost ) then
-		ConstructorForemost( pObj, ... )
+	if ( pfnForemostConstructor ) then
+		pfnForemostConstructor( pObj, ... )
 	end
 
 	ignite = true
@@ -337,13 +322,12 @@ function robustclass.Create( classname, ... )
 		assert( false, '\'classname\' (#1) to \'Create\' should be a string' )
 	end
 
-
 	--
 	-- Retrieve the class
 	--
-	local class_t = FindMetaTable( classname )
+	local class = FindMetaTable( classname )
 
-	if ( not class_t ) then
+	if ( not class ) then
 
 		ErrorNoHaltWithStack( false, 'class \'', classname, '\' doesn\'t exist' )
 		return false
@@ -354,12 +338,12 @@ function robustclass.Create( classname, ... )
 	-- Prepare an object
 	--
 	local pObj = {}
-	setmetatable( pObj, class_t )
+	setmetatable( pObj, class )
 
 	--
 	-- Allow the class to adjust/override the default creation action
 	--
-	local __new = class_t.__new
+	local __new = class.__new
 	local bContinue, pObjSubstitute, bConstruct = true, nil, true
 
 	if ( __new ) then
@@ -380,7 +364,7 @@ function robustclass.Create( classname, ... )
 
 	if ( pObjSubstitute ~= nil ) then
 
-		local pObjSubstitute_mt = getmetatable( pObjSubstitute )
+		local pObjSubstitute_mt = forcegetmetatable( pObjSubstitute )
 
 		if ( not pObjSubstitute_mt ) then
 			return nil
@@ -404,49 +388,48 @@ function robustclass.Create( classname, ... )
 	-- Construct
 	--
 	if ( bConstruct == true ) then
-		construct( pObj, class_t, classname, nil, ... )
+		construct( pObj, class, classname, nil, ... )
 	end
 
 	return pObj
 
 end
 
-_ALIAS.CreateObject = robustclass.Create
+robustclass.CreateObject = robustclass.Create
 
-_ALIAS.New = robustclass.Create
-_ALIAS.NewObject = robustclass.Create
+robustclass.New = robustclass.Create
+robustclass.NewObject = robustclass.Create
 
 
 --[[–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 	Purpose: (Internal) Destructs the given object
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
-local function destruct( pObj, class_t, classname, ignite )
+local function destruct( pObj, class, classname, ignite )
 
-	local baseclass_t = class_t.BaseClass
+	local baseclass = class.BaseClass
 
-	if ( baseclass_t ) then
+	if ( baseclass ) then
 
-		local baseclassname = baseclass_t.ClassName
+		local baseclassname = baseclass.ClassName
 
-		destruct( pObj, baseclass_t, baseclassname, ignite )
+		destruct( pObj, baseclass, baseclassname, ignite )
 
 		if ( ignite ) then
 
-			local DestructorLatter = baseclass_t[ '_' .. baseclassname ]
+			local pfnNextDestructor = baseclass[ '_' .. baseclassname ]
 
-			if ( DestructorLatter ) then
-				DestructorLatter( pObj )
+			if ( pfnNextDestructor ) then
+				pfnNextDestructor( pObj )
 			end
 
 		end
 
 	end
 
+	local pfnForemostDestructor = class[ '_' .. classname ]
 
-	local DestructorForemost = class_t[ '_' .. classname ]
-
-	if ( DestructorForemost ) then
-		DestructorForemost( pObj )
+	if ( pfnForemostDestructor ) then
+		pfnForemostDestructor( pObj )
 	end
 
 	ignite = true
@@ -458,7 +441,7 @@ end
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
 function robustclass.Delete( pObj )
 
-	local pObj_mt = getmetatable( pObj )
+	local pObj_mt = forcegetmetatable( pObj )
 
 	if ( not pObj_mt ) then
 		return false
@@ -474,26 +457,26 @@ function robustclass.Delete( pObj )
 		return false
 	end
 
-	local class_t = FindMetaTable( classname )
+	local class = FindMetaTable( classname )
 
-	if ( not class_t ) then
+	if ( not class ) then
 		return false
 	end
 
 	--
 	-- Allow the class to adjust/override the default deletion action
 	--
-	local __delete = class_t.__delete
+	local __delete = class.__delete
 
 	if ( __delete and __delete( pObj ) == false ) then
 		return false
 	end
 
 	-- Destruct
-	destruct( pObj, class_t, classname, nil )
+	destruct( pObj, class, classname, nil )
 
 	-- Remove the metatable
-	setmetatable( pObj, nil )
+	forcesetmetatable( pObj, nil )
 
 	--
 	-- Purge the object
@@ -510,10 +493,10 @@ function robustclass.Delete( pObj )
 
 end
 
-_ALIAS.DeleteObject = robustclass.Delete
+robustclass.DeleteObject = robustclass.Delete
 
-_ALIAS.Destroy = robustclass.Delete
-_ALIAS.DestroyObject = robustclass.Delete
+robustclass.Destroy = robustclass.Delete
+robustclass.DestroyObject = robustclass.Delete
 
-_ALIAS.Remove = robustclass.Delete
-_ALIAS.RemoveObject = robustclass.Delete
+robustclass.Remove = robustclass.Delete
+robustclass.RemoveObject = robustclass.Delete

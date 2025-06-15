@@ -1,6 +1,6 @@
 
 # glua-RobustClass
-A flexible, performant, solid, and practical class system for GLua.
+A flexible, performant, solid, and practical class system for GLua with a kinship to C++ classes.
 
 ## What's the point?
 We already have powerful enough Lua metatables. So, what's the purpose of it?
