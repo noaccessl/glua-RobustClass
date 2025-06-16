@@ -6,6 +6,7 @@ Here you can get acquainted with the main insights of this library.
 * Objects
 	* **[Info](#objects)**
 * Functions
+	* **[robustclass.Namespace](#robustclass-namespace)**
 	* **[robustclass.Register](#robustclass-register)**
 	* **[robustclass.Create](#robustclass-create)**
 	* **[robustclass.Delete](#robustclass-delete)**
@@ -19,18 +20,32 @@ Must have `index` field in its metatable.
 
 ## Functions
 
+<a name="robustclass-namespace"></a>
+
+#### <code>robustclass.Namespace( **[string]** name )</code>
+* **Description**</br>
+	&emsp; Sets the namespace in that code location where this function is called.</br>
+	&emsp; The namespace applies when registering new classes. So, class names and base class names will be prefixed with the namespace itself: `<Namespace>::<ClassName>`
+
+* **Arguments**
+	* <code>**[string]**</code> **name**</br>
+		&emsp; Set to `nil` to clear the namespace
+
+---
+</br>
+
 <a name="robustclass-register"></a>
 
 #### <code>robustclass.Register( **[string]** reginput )</code>
-* <ins>**Description**</ins></br>
+* **Description**</br>
 	&emsp; Registers a new class.
 
-* <ins>**Arguments**</ins>
+* **Arguments**
 	* <code>**[string]**</code> **reginput**</br>
 		&emsp; The string with the class name and the base class(-es).</br>
 		&emsp; Must be in the following format: `<ClassName>[ : <BaseClass>[, <BaseClass2>, ...]]`
 
-* <ins>**Returns**</ins>
+* **Returns**
 	* <code>**[table]**</code>
 		* **ptrDummyClass = {}** on incorrect **reginput**
 		* new/existing **[CLASS](#class)** on success
@@ -47,17 +62,17 @@ Must have `index` field in its metatable.
 <a name="robustclass-create"></a>
 
 #### <code>robustclass.Create( [string] classname, ... )</code>
-* <ins>**Description**</ins></br>
+* **Description**</br>
 	&emsp; Creates a new specific object.
 
-* <ins>**Arguments**</ins>
+* **Arguments**
 	* <code>**[string]**</code> **classname**</br>
 		&emsp; The name of the needed class.
 
 	* <code>**[vararg]**</code> **args**</br>
 		&emsp; The arguments to be passed to the object's <code>**[__new-metamethod](#class-field-new)**</code> and <code>**[constructor](#class-field-constructor)**</code>.
 
-* <ins>**Returns**</ins>
+* **Returns**
 	* `any`
 		1. `false`
 			* if the class doesn't exist
@@ -78,14 +93,14 @@ Must have `index` field in its metatable.
 <a name="robustclass-delete"></a>
 
 #### <code>robustclass.Delete( [table] pObj )</code></br><code>robustclass.Delete( [userdata] pObj )</code>
-* <ins>**Description**</ins></br>
+* **Description**</br>
 	&emsp; Deletes the given object.
 
-* <ins>**Arguments**</ins>
+* **Arguments**
 	* <code>**[table] or [userdata]**</code> **pObj**</br>
 		&emsp; The object to be removed.
 
-* <ins>**Returns**</ins>
+* **Returns**
 	* <code>**[boolean]**</code>
 		1. `false` if
 			* not an object
@@ -108,14 +123,7 @@ Must have `index` field in its metatable.
 ## Classes
 
 ### `CLASS`
-<!--
-
-	А вот здесь? Что здесь конструктивного написать?
-
-	Нужно самые необходимые факты.
-
--->
-* **<ins>**Description**</ins>**</br>
+* ****Description****</br>
 	&emsp; The particular class itself that will be used as the metatable for the objects of that particular class.</br>
 	</br>
 	&emsp; The class name is stored in the global table as an alias-function for **[robustclass.Create](#robustclass-create)**.</br>
@@ -125,7 +133,7 @@ Must have `index` field in its metatable.
 	&emsp; &emsp; `__index` — Subsequent access to the inherited base class(-es).</br>
 	&emsp; Every previous inherited base class will be linked to the subsequent inherited base class through <code>**[__index-metafield](https://www.lua.org/pil/13.4.1.html)**</code>. See the [Source:Line 100–105](/robustclass.lua#L100-105)
 
-* **<ins>**Members**</ins>**
+* ****Members****
 	* <code>**[string]**</code> **ClassName**</br>
 		&emsp; The name of the class.
 
@@ -141,14 +149,14 @@ Must have `index` field in its metatable.
 		&emsp; Value accessor.</br>
 		&emsp; **Default:** <code>**CLASS**</code>
 
-* <ins>**Custom Fields**</ins>
+* **Custom Fields**
 
 	<a name="class-field-constructor"></a>
 	* <code>**[function]**</code> **Constructor**</br>
 		&emsp; The function for building the object.</br>
 		&emsp; (!) The name must match the class name.</br>
 		</br>
-		&emsp; <ins>Function Argument(-s)</ins>:</br>
+		&emsp; Function Argument(-s):</br>
 		&emsp; &emsp; 1. <code>**[table] or [userdata]**</code> **self** — the object itself.</br>
 		&emsp; &emsp; 2. <code>**[vararg]**</code> **args** — additional arguments passed to the used `creator-function`.</br>
 
@@ -156,7 +164,7 @@ Must have `index` field in its metatable.
 		&emsp; The function for destroying the object.</br>
 		&emsp; (!) The name must be prefixed with `_`.</br>
 		</br>
-		&emsp; <ins>Function Argument(-s)</ins>:</br>
+		&emsp; Function Argument(-s):</br>
 		&emsp; &emsp; 1. <code>**[table] or [userdata]**</code> **self** — the object itself.</br>
 
 	<a name="class-field-new"></a>
@@ -164,11 +172,11 @@ Must have `index` field in its metatable.
 		&emsp; The function that is called after the object's metatable is set and before the object is constructed.</br>
 		&emsp; Use it for adjusting/overriding the default creation action.</br>
 		</br>
-		&emsp; <ins>Function Argument(-s)</ins>:</br>
+		&emsp; Function Argument(-s):</br>
 		&emsp; &emsp; 1. <code>**[table] or [userdata]**</code> **self** — the object itself.</br>
 		&emsp; &emsp; 2. <code>**[vararg]**</code> **args** — additional arguments passed to the used `creator-function`.</br>
 		</br>
-		&emsp; <ins>Function Return(-s)</ins>:</br>
+		&emsp; Function Return(-s):</br>
 		&emsp; &emsp; 1. <code>**[boolean]**</code> **bContinue** — continues or prevents the creation.</br>
 		&emsp; &emsp; 2. <code>**[table] or [userdata]**</code> **pObjSubstitute** — something to replace the initial object with.</br>
 		&emsp; &emsp; 3. <code>**[boolean]**</code> **bConstruct** — continues or prevents the construction of the object.
@@ -178,10 +186,10 @@ Must have `index` field in its metatable.
 		&emsp; The function that is called before the object gets destructed and deleted.</br>
 		&emsp; Use it for adjusting/overriding the default deletion action.</br>
 		</br>
-		&emsp; <ins>Function Argument(-s)</ins>:</br>
+		&emsp; Function Argument(-s):</br>
 		&emsp; &emsp; 1. <code>**[table] or [userdata]**</code> **self** — the object itself.</br>
 		</br>
-		&emsp; <ins>Function Return(-s)</ins>:</br>
+		&emsp; Function Return(-s):</br>
 		&emsp; &emsp; 1. <code>**[boolean]**</code> **bContinue** — continues or prevents the deletion.</br>
 
 

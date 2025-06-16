@@ -83,7 +83,7 @@ It serves as a tool that amplifies their functionality and streamlines the work 
 	</details>
 
 * Possibility of adjusting/overriding the default creation/deletion action</br>
-	&emsp; See more at the docs.
+	&emsp; See more at the doc.
 
 * Multiple inheritance</br>
 	<details> <summary>Demo</summary>
@@ -137,5 +137,8 @@ It serves as a tool that amplifies their functionality and streamlines the work 
 	![Demo #3](demo-3.png)
 	</details>
 
-## Docs
-Read the main documentation [here](/DOCS.md)
+* Simple namespaces</br>
+	&emsp; See more at the doc.
+
+## Doc
+The main documentation is [here](/DOCS.md)

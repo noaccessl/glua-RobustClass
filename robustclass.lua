@@ -53,6 +53,8 @@ setmetatable( robustclass, {
 
 } )
 
+robustclass.Namespaces = robustclass.Namespaces or {}
+
 
 --[[–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 	Purpose: (Internal) Common __tostring-metamethod
@@ -81,6 +83,68 @@ end
 
 
 --[[–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+	Purpose: (Internal) Locates the scope for the current namespace
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
+local namespacescope; do
+
+	local getdebuginfo = debug.getinfo
+
+	function namespacescope()
+
+		local level = 2
+		::try::
+
+		level = level + 1
+
+		local dbginfo = getdebuginfo( level, 'Sn' )
+
+		if ( dbginfo.name ~= nil ) then
+			goto try
+		else
+			return dbginfo.source
+		end
+
+	end
+
+end
+
+--[[–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+	Purpose: Sets the namespace in that code location where this function is called
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
+function robustclass.Namespace( name )
+
+	if ( name ~= nil ) then
+
+		assert( isstring( name ), '\'name\' (#1) to \'Namespace\' should be a string' )
+		name = strmatch( name, '([%w_]+)' )
+
+	end
+
+	local scope = namespacescope()
+
+	robustclass.Namespaces[scope] = name
+
+end
+
+--[[–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+	Purpose: (Internal) Prefixes the given class name with the current namespace
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
+local function namespaced( classname )
+
+	local scope = namespacescope()
+
+	local namespace = robustclass.Namespaces[scope]
+
+	if ( namespace ) then
+		return namespace .. '::' .. classname
+	end
+
+	return classname
+
+end
+
+
+--[[–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 	Purpose: (Internal) Inherits the provided base classes in the given class
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
 local function inherit( class, inheritances )
@@ -88,6 +152,8 @@ local function inherit( class, inheritances )
 	local pPrevBaseClass
 
 	for baseclassname in strgmatch( inheritances, '([%w_]+),? ?' ) do
+
+		baseclassname = namespaced( baseclassname )
 
 		local BaseClassMeta = FindMetaTable( baseclassname )
 
@@ -191,6 +257,8 @@ function robustclass.Register( reginput )
 		return ptrDummyClass
 
 	end
+
+	classname = namespaced( classname )
 
 	local inheritances = strmatch( reginput, ' : (.+)' )
 
