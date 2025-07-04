@@ -131,7 +131,7 @@ Must have `index` field in its metatable.
 	&emsp; The class itself, by the way, has its own metatable too for convenience and performance purposes.</br>
 	&emsp; &emsp; `__call` — Serves as an alias for **[robustclass.Create](#robustclass-create)**.</br>
 	&emsp; &emsp; `__index` — Subsequent access to the inherited base class(-es).</br>
-	&emsp; Every previous inherited base class will be linked to the subsequent inherited base class through <code>**[__index-metafield](https://www.lua.org/pil/13.4.1.html)**</code>. See the [Source:Line 100–105](/robustclass.lua#L100-105)
+	&emsp; Every previous inherited base class will be linked to the subsequent inherited base class through <code>**[__index-metafield](https://www.lua.org/pil/13.4.1.html)**</code>. See the [Source:Line 166–171](/robustclass.lua#L166-171)
 
 * ****Members****
 	* <code>**[string]**</code> **ClassName**</br>
@@ -143,7 +143,7 @@ Must have `index` field in its metatable.
 
 	* <code>**[function]**</code> **__tostring**</br>
 		&emsp; Formats the info about the object.</br>
-		&emsp; **Default:** <code>**[Common __tostring-metamethod](/robustclass.lua#L60-L80)**</code>
+		&emsp; **Default:** <code>**[Common __tostring-metamethod](/robustclass.lua#L62-L82)**</code>
 
 	* <code>**[table] or [function]**</code> **__index**</br>
 		&emsp; Value accessor.</br>
