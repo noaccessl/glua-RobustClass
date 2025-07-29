@@ -459,7 +459,7 @@ function robustclass.Create( classname, ... )
 	-- Construct
 	--
 	if ( bConstruct == true ) then
-		construct( pObj, class, classname, nil, ... )
+		construct( pObj, class, class.RawClassName, nil, ... )
 	end
 
 	return pObj
@@ -544,7 +544,7 @@ function robustclass.Delete( pObj )
 	end
 
 	-- Destruct
-	destruct( pObj, class, pObj.RawClassName, nil )
+	destruct( pObj, class, class.RawClassName, nil )
 
 	-- Remove the metatable
 	forcesetmetatable( pObj, nil )
