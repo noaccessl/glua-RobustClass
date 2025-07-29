@@ -134,6 +134,9 @@ Must have `index` field in its metatable.
 	&emsp; Every previous inherited base class will be linked to the subsequent inherited base class through <code>**[__index-metafield](https://www.lua.org/pil/13.4.1.html)**</code>. See the [Source:Line 166–171](/robustclass.lua#L166-171)
 
 * ****Members****
+	* <code>**[string]**</code> **RawClassName**</br>
+		&emsp; The raw name of the class (not prefixed with the namespace). Used internally.
+
 	* <code>**[string]**</code> **ClassName**</br>
 		&emsp; The name of the class.
 

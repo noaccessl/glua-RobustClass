@@ -41,7 +41,7 @@ local _G = _G
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
 robustclass = robustclass or {}
 
-robustclass.VERSION = 250615 -- YY/MM/DD
+robustclass.VERSION = 250729 -- YY/MM/DD
 
 setmetatable( robustclass, {
 
@@ -188,12 +188,13 @@ end
 --[[–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 	Purpose: (Internal) Refines the given class
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
-local function refine( class, classname, inheritances )
+local function refine( class, rawclassname, classname, inheritances )
 
 	for k in next, class do
 		class[k] = nil
 	end
 
+	class.RawClassName = rawclassname
 	class.ClassName = classname
 	class.__tostring = fnCommonToString
 
@@ -258,6 +259,7 @@ function robustclass.Register( reginput )
 
 	end
 
+	local rawclassname = classname
 	classname = namespaced( classname )
 
 	local inheritances = strmatch( reginput, ' : (.+)' )
@@ -269,7 +271,7 @@ function robustclass.Register( reginput )
 	--
 	if ( CLASS ) then
 
-		refine( CLASS, classname, inheritances )
+		refine( CLASS, rawclassname, classname, inheritances )
 		return CLASS
 
 	end
@@ -279,6 +281,7 @@ function robustclass.Register( reginput )
 	--
 	CLASS = {
 
+		RawClassName = rawclassname;
 		ClassName = classname;
 		__tostring = fnCommonToString
 
@@ -349,19 +352,19 @@ robustclass.Class = robustclass.Register
 --[[–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 	Purpose: (Internal) Constructs the given object
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
-local function construct( pObj, class, classname, ignite, ... )
+local function construct( pObj, class, rawclassname, ignite, ... )
 
 	local baseclass = class.BaseClass
 
 	if ( baseclass ) then
 
-		local baseclassname = baseclass.ClassName
+		local rawbaseclassname = baseclass.RawClassName
 
-		construct( pObj, baseclass, baseclassname, ignite, ... )
+		construct( pObj, baseclass, rawbaseclassname, ignite, ... )
 
 		if ( ignite ) then
 
-			local pfnNextConstructor = baseclass[baseclassname]
+			local pfnNextConstructor = baseclass[rawbaseclassname]
 
 			if ( pfnNextConstructor ) then
 				pfnNextConstructor( pObj, ... )
@@ -371,7 +374,7 @@ local function construct( pObj, class, classname, ignite, ... )
 
 	end
 
-	local pfnForemostConstructor = class[classname]
+	local pfnForemostConstructor = class[rawclassname]
 
 	if ( pfnForemostConstructor ) then
 		pfnForemostConstructor( pObj, ... )
@@ -472,19 +475,19 @@ robustclass.NewObject = robustclass.Create
 --[[–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 	Purpose: (Internal) Destructs the given object
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––]]
-local function destruct( pObj, class, classname, ignite )
+local function destruct( pObj, class, rawclassname, ignite )
 
 	local baseclass = class.BaseClass
 
 	if ( baseclass ) then
 
-		local baseclassname = baseclass.ClassName
+		local rawbaseclassname = baseclass.RawClassName
 
-		destruct( pObj, baseclass, baseclassname, ignite )
+		destruct( pObj, baseclass, rawbaseclassname, ignite )
 
 		if ( ignite ) then
 
-			local pfnNextDestructor = baseclass[ '_' .. baseclassname ]
+			local pfnNextDestructor = baseclass[ '_' .. rawbaseclassname ]
 
 			if ( pfnNextDestructor ) then
 				pfnNextDestructor( pObj )
@@ -494,7 +497,7 @@ local function destruct( pObj, class, classname, ignite )
 
 	end
 
-	local pfnForemostDestructor = class[ '_' .. classname ]
+	local pfnForemostDestructor = class[ '_' .. rawclassname ]
 
 	if ( pfnForemostDestructor ) then
 		pfnForemostDestructor( pObj )
@@ -541,7 +544,7 @@ function robustclass.Delete( pObj )
 	end
 
 	-- Destruct
-	destruct( pObj, class, classname, nil )
+	destruct( pObj, class, pObj.RawClassName, nil )
 
 	-- Remove the metatable
 	forcesetmetatable( pObj, nil )
